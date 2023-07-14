@@ -16,26 +16,26 @@ import it.polito.tdp.itunes.model.Track;
 
 public class ItunesDAO {
 	
-	public List<Album> getAllAlbums(){
-		final String sql = "SELECT * FROM Album";
-		List<Album> result = new LinkedList<>();
-		
-		try {
-			Connection conn = DBConnect.getConnection();
-			PreparedStatement st = conn.prepareStatement(sql);
-			ResultSet res = st.executeQuery();
+//	public List<Album> getAllAlbums(){
+//		final String sql = "SELECT * FROM Album";
+//		List<Album> result = new LinkedList<>();
+//		
+//		try {
+//			Connection conn = DBConnect.getConnection();
+//			PreparedStatement st = conn.prepareStatement(sql);
+//			ResultSet res = st.executeQuery();
+//
+//			while (res.next()) {
+//				result.add(new Album(res.getInt("AlbumId")), res.getString("Title")), this.nCanzoni(res.getInt("AlbumId")));
+//			}
+//			conn.close();
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//			throw new RuntimeException("SQL Error");
+//		}
+//		return result;
+//	}
 
-			while (res.next()) {
-				result.add(new Album(res.getInt("AlbumId"), res.getString("Title")));
-			}
-			conn.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
-			throw new RuntimeException("SQL Error");
-		}
-		return result;
-	}
-	
 	public List<Artist> getAllArtists(){
 		final String sql = "SELECT * FROM Artist";
 		List<Artist> result = new LinkedList<>();
@@ -139,4 +139,32 @@ public class ItunesDAO {
 		return result;
 	}
 	
+	public List<Album> getVertici(int n) {
+		
+		String sql = "SELECT a.AlbumId, a.Title, COUNT(*) AS nCanzoni "
+				+ "FROM track t, album a "
+				+ "WHERE t.AlbumId = a.AlbumId "
+				+ "group BY a.AlbumId, a.Title "
+				+ "HAVING nCanzoni > ?";
+		
+		List<Album> listaAlbum = new LinkedList<Album>();
+		
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1, n);
+			ResultSet rs = st.executeQuery();
+			
+			while(rs.next()) {
+				Album al = new Album(rs.getInt("AlbumId"), rs.getString("Title"), rs.getInt("nCanzoni"));
+				listaAlbum.add(al);
+			}
+			
+			conn.close();
+			return listaAlbum;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 }

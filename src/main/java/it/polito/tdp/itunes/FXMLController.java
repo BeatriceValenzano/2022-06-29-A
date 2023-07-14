@@ -5,6 +5,7 @@
 package it.polito.tdp.itunes;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 import it.polito.tdp.itunes.model.Album;
 import it.polito.tdp.itunes.model.Model;
@@ -35,10 +36,10 @@ public class FXMLController {
     private Button btnPercorso; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbA1"
-    private ComboBox<?> cmbA1; // Value injected by FXMLLoader
+    private ComboBox<Album> cmbA1; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbA2"
-    private ComboBox<?> cmbA2; // Value injected by FXMLLoader
+    private ComboBox<Album> cmbA2; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtN"
     private TextField txtN; // Value injected by FXMLLoader
@@ -52,16 +53,56 @@ public class FXMLController {
     @FXML
     void doCalcolaAdiacenze(ActionEvent event) {
     	
+    	txtResult.clear();
+    	Album a1 = this.cmbA1.getValue();
+    	if(a1 == null) {
+    		txtResult.appendText("Selezionare un album valido!");
+    	} else {
+    		for(Album a : model.listaSuccessori(a1)) {
+    			txtResult.appendText(a.toString() + ", Bilancio = " + a.getBilancio() + "\n");
+    		}
+    	}
     }
 
     @FXML
     void doCalcolaPercorso(ActionEvent event) {
+    	
+    	txtResult.clear();
+    	try {
+    		int x = Integer.parseInt(this.txtX.getText());
+    		Album partenza = this.cmbA1.getValue();
+    		Album arrivo = this.cmbA2.getValue();
+    		if(partenza == null || arrivo == null) {
+    			txtResult.appendText("Selezionare degli album validi!");
+    		}
+    		List<Album> percorso = model.percorsoMigliore(x, partenza, arrivo);
+    		if(percorso.size() == 0) {
+    			txtResult.appendText("Non esiste un percorso tra " + partenza + " e " + arrivo);
+    		}
+    		for(Album a : percorso) {
+    			txtResult.appendText(a.toString() + "; Bilancio= " + a.getBilancio() + "\n");
+    		}
+    	}catch(NumberFormatException e) {
+    		txtResult.appendText("Inserire un numero valido!");
+    	}
     	
     }
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
     	
+    	this.txtResult.clear();
+    	this.cmbA1.getItems().clear();
+    	try {
+    		int n = Integer.parseInt(this.txtN.getText());
+    		model.creaGrafo(n);
+    		txtResult.appendText("Grafo creato!\n");
+    		txtResult.appendText("# Vertici: " + model.vertici() + "\n# Archi: " + model.archi());
+    		this.cmbA1.getItems().addAll(model.getListaVertici());
+    		this.cmbA2.getItems().addAll(model.getListaVertici());
+    	} catch (NumberFormatException e) {
+    		txtResult.appendText("Inserire un numero intero!");
+    	}
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
